@@ -1,0 +1,8 @@
+/js/*
+    Content-type: application/javascript
+
+/css/*
+    Content-type: text/css
+
+/wasm/*
+    Content-type: application/wasm

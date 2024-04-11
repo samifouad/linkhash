@@ -1,0 +1,495 @@
+---
+import MenuIcon from '../components/MenuIcon.svelte'
+import MobileMenu from '../components/MenuMobile.svelte'
+import { ViewTransitions } from 'astro:transitions';
+---
+<style>
+	#drawerMenu {
+		display: none;
+		opacity: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 4;
+        overflow: hidden;
+        text-align: center;
+        background-color: rgba(255,255,255,0.95);
+    }
+	.fade-in {
+		opacity: 1;
+		animation-name: fadeInOpacity;
+		animation-iteration-count: 1;
+		animation-timing-function: ease-in;
+		animation-duration: 0.1s;
+        animation-fill-mode: forwards; 
+	}
+
+	@keyframes fadeInOpacity {
+		0% {
+			opacity: 0;
+		}
+		100% {
+			opacity: 1;
+		}
+	}
+</style>
+<style>
+	html {
+		font-family: system-ui, sans-serif;
+		background: #13151a;
+		background-size: 224px;
+	}
+	code {
+		font-family:
+			Menlo,
+			Monaco,
+			Lucida Console,
+			Liberation Mono,
+			DejaVu Sans Mono,
+			Bitstream Vera Sans Mono,
+			Courier New,
+			monospace;
+	}
+	html, body {
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+	}
+
+	.accent {
+		pointer-events: none;
+		max-width: 20px;
+	}
+
+	#output {
+		color: #1e1e1e;
+		background-color: #fffbe8;
+	}
+
+	.errors {
+		background-color: #584355;
+		cursor: ew-resize;
+	}
+
+	/* Responsive cursor style for smaller screens */
+	@media (max-width: 1023px) { /* Adjust breakpoint as needed for 'md' */
+		.errors {
+			cursor: ns-resize; /* Vertical resize */
+		}
+	}
+
+	.codeflask {
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+	}
+
+	.codeflask, .codeflask * {
+		box-sizing: border-box;
+	}
+
+	.codeflask__pre {
+		pointer-events: none;
+		z-index: 3;
+		overflow: hidden;
+	}
+
+	.codeflask__textarea {
+		background: none;
+		border: none;
+		color: #fff;
+		z-index: 1;
+		resize: none;
+		font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+		-webkit-appearance: pre;
+		appearance: pre;
+		caret-color: #111;
+		z-index: 2;
+		width: 100%;
+		height: 100%;
+	}
+
+	.codeflask--has-line-numbers .codeflask__textarea {
+		width: calc(100% - 40px);
+	}
+
+	.codeflask__code {
+		display: block;
+		font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+		overflow: hidden;
+	}
+
+	.codeflask__flatten {
+		padding: 10px;
+		font-size: 13px;
+		line-height: 20px;
+		white-space: pre;
+		position: absolute;
+		top: 0;
+		left: 0;
+		overflow: auto;
+		margin: 0 !important;
+		outline: none;
+		text-align: left;
+	}
+
+	.codeflask--has-line-numbers .codeflask__flatten {
+		width: calc(100% - 20px);
+		left: 20px;
+	}
+
+	.codeflask__line-highlight {
+		position: absolute;
+		top: 10px;
+		left: 0;
+		width: 100%;
+		height: 20px;
+		background: rgba(0,0,0,0.1);
+		z-index: 1;
+	}
+
+	.codeflask__lines {
+		padding: 11px 4px;
+		padding-right: 10px;
+		font-size: 10px;
+		line-height: 20px;
+		font-family: 'Cousine', monospace;
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 30px;
+		height: 100%;
+		text-align: right;
+		color: #999;
+		z-index: 2;
+	}
+
+	.codeflask__lines__line {
+		display: block;
+	}
+
+	.codeflask.codeflask--has-line-numbers {
+		padding-left: 10px;
+	}
+
+	.codeflask.codeflask--has-line-numbers:before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 30px;
+		height: 100%;
+		background: #eee;
+		z-index: 1;
+	}
+
+	#loading-spinner {
+		position: absolute;
+		height: 100vh; /* Adjust the height as needed */
+		width: 100vw; /* Adjust the width as needed */
+		z-index: 1000;
+		background-color: #fff;
+	}
+
+	#loading-spinner svg {
+		margin-left: auto;
+		margin-right: auto;
+		margin-top: calc(50vh - 25px); /* Adjust the top margin as needed */
+		fill: none;
+	}
+
+	#loading-spinner path {
+		stroke-dasharray: 175; /* This is the approximate length of the path. Adjust as needed. */
+		stroke-dashoffset: 175;
+		animation: trace 1.4s linear infinite;
+	}
+
+	@keyframes trace {
+		0% {
+			stroke-dashoffset: 175;
+		}
+		100% {
+			stroke-dashoffset: 0;
+		}
+	}
+
+	@keyframes fadeOut {
+		from { opacity: 1; }
+		to { opacity: 0; }
+	}
+
+	.fade-out {
+		animation: fadeOut 1s ease-out forwards;
+	}
+</style>
+<script is:inline type="module">
+	import CodeFlask from "/js/codeflask.module.js"
+	import { debounce, sendToWorker } from "/js/index.js"
+
+	console.log('astro loaded')
+
+	function getCodeHash() {
+		const urlParams = new URLSearchParams(window.location.search)
+		return urlParams.get('codeHash')
+	}
+
+	function encodeForUrl(data) {
+		return btoa(data)
+			.replace(/\+/g, '-') // Replace + with -
+			.replace(/\//g, '_') // Replace / with _
+			.replace(/=+$/, ''); // Remove trailing =
+	}
+
+	function decodeFromUrl(encodedData) {
+		try {
+			console.log("running decoding") // DEBUG
+			return atob(encodedData.replace(/-/g, '+').replace(/_/g, '/'))
+		} catch (e) {	
+			console.error("error decoding base64 url")
+			return null
+		}
+	}
+
+	function updateUrl(codeHash) {
+		history.replaceState({}, '', '/?h=' + codeHash);
+	}
+
+	function updateState (code) {
+		const codeHash = encodeForUrl(code)
+		updateUrl(codeHash)
+		console.log(code) // debug
+		console.log(codeHash) // debug
+	}
+
+	const prismGrammar = {
+	comment: {
+		pattern: /\/\/.*/,
+		greedy: true,
+	},
+	function: /([a-z_][a-z0-9_]+)(?=\()/,
+	keyword:
+		/\b(use|case|if|@external|@deprecated|fn|import|let|assert|try|pub|type|opaque|const|panic|todo|as)\b/,
+	symbol: {
+		pattern: /([A-Z][A-Za-z0-9_]+)/,
+		greedy: true,
+	},
+	operator: {
+		pattern:
+		/(<<|>>|<-|->|\|>|<>|\.\.|<=\.?|>=\.?|==\.?|!=\.?|<\.?|>\.?|&&|\|\||\+\.?|-\.?|\/\.?|\*\.?|%\.?|=)/,
+		greedy: true,
+	},
+	string: {
+		pattern: /"((?:[^"\\]|\\.)*)"/,
+		greedy: true,
+	},
+	module: {
+		pattern: /([a-z][a-z0-9_]*)\./,
+		inside: {
+		punctuation: /\./,
+		},
+		alias: "keyword",
+	},
+	punctuation: /[.\\:,{}()]/,
+	number:
+		/\b(?:0b[0-1]+|0o[0-7]+|[[:digit:]][[:digit:]_]*(\\.[[:digit:]]*)?|0x[[:xdigit:]]+)\b/,
+	};
+
+	// select editor
+	const editorElem = document.getElementById('editor')
+
+	// initialize codeflask
+	const flask = new CodeFlask(editorElem, { language: 'gleam', lineNumbers: true })
+
+	// load hash from url
+	const queryString = window.location.search;
+	console.log(queryString); // DEBUG
+
+	const urlParams = new URLSearchParams(queryString);
+	console.log(urlParams); // DEBUG
+
+	let loadFromUrl = false
+	let loadedCodeHash = ""
+	let loadedCodeHashLength = 0
+	try {
+		loadedCodeHash = urlParams.get('h')
+		console.log(loadedCodeHash); // DEBUG
+
+		loadedCodeHashLength = loadedCodeHash.length
+		console.log(loadedCodeHashLength); // DEBUG
+		loadFromUrl = true
+	} catch (e) {
+		console.error(e)
+		console.info("no hash present, loading default example")
+	}
+
+	// get initial code
+	const initialCode = loadFromUrl ? decodeFromUrl(loadedCodeHash) : document.querySelector("#code").innerHTML
+
+	// add language w/ highlighter
+	flask.addLanguage("gleam", prismGrammar)
+
+	// update code w/ highlighting
+	flask.updateCode(initialCode)
+
+	// flask.onUpdate(debounce((code) => sendToWorker(code), 200))
+
+	// flask.onUpdate((code) => {  updateState(code) })
+
+	const debouncedSendToWorker = debounce((code) => sendToWorker(code), 600)
+
+	flask.onUpdate((code) => {
+		debouncedSendToWorker(code)
+		updateState(code)
+	})
+
+	document.addEventListener('DOMContentLoaded', function() {
+		const resizer = document.getElementById('errors');
+		const leftPanel = document.getElementById('editor');
+		const rightPanel = document.getElementById('output');
+		let isDragging = false;
+
+		function updatePanelSizes(clientX, clientY) {
+			const containerRect = resizer.parentNode.getBoundingClientRect();
+
+			if (window.innerWidth >= 1024) { // lg and up
+				const minPanelWidth = containerRect.width * 0.3;
+				let leftWidth = clientX - containerRect.left;
+				let rightWidth = containerRect.width - leftWidth - resizer.offsetWidth;
+
+				if (leftWidth < minPanelWidth) {
+					leftWidth = minPanelWidth;
+					rightWidth = containerRect.width - leftWidth - resizer.offsetWidth;
+				} else if (rightWidth < minPanelWidth) {
+					rightWidth = minPanelWidth;
+					leftWidth = containerRect.width - rightWidth - resizer.offsetWidth;
+				}
+
+				leftPanel.style.width = `${leftWidth}px`;
+				rightPanel.style.width = `${rightWidth}px`;
+			} else { // sm & md
+				const minPanelHeight = containerRect.height * 0.3;
+				let topHeight = clientY - containerRect.top;
+				let bottomHeight = containerRect.height - topHeight - resizer.offsetHeight;
+
+				if (topHeight < minPanelHeight) {
+					topHeight = minPanelHeight;
+					bottomHeight = containerRect.height - topHeight - resizer.offsetHeight;
+				} else if (bottomHeight < minPanelHeight) {
+					bottomHeight = minPanelHeight;
+					topHeight = containerRect.height - bottomHeight - resizer.offsetHeight;
+				}
+
+				leftPanel.style.height = `${topHeight}px`;
+				rightPanel.style.height = `${bottomHeight}px`;
+			}
+		}
+
+		function startDragging(e) {
+			isDragging = true;
+			e.preventDefault();
+		}
+
+		resizer.addEventListener('mousedown', startDragging);
+		resizer.addEventListener('touchstart', startDragging);
+
+		function onMouseMove(e) {
+			if (!isDragging) return;
+			let clientX = e.clientX || e.touches[0].clientX;
+			let clientY = e.clientY || e.touches[0].clientY;
+			updatePanelSizes(clientX, clientY);
+		}
+
+		document.addEventListener('mousemove', onMouseMove);
+		document.addEventListener('touchmove', onMouseMove);
+
+		function stopDragging() {
+			isDragging = false;
+			adjustLayout();
+		}
+
+		document.addEventListener('mouseup', stopDragging);
+		document.addEventListener('touchend', stopDragging);
+
+		// Function to adjust layout
+		function adjustLayout() {
+			// Tailwind's breakpoints (adjust these values if you're using custom breakpoints)
+				const lgBreakpoint = 1024; // pixels
+
+			if (window.innerWidth >= lgBreakpoint) {
+				// 'lg' and above:
+				leftPanel.style.height = '100%'; 
+				rightPanel.style.height = '100%'; 
+				resizer.style.width = '5px';
+				resizer.style.height = '100%';
+			} else {
+				// 'sm' and 'md':
+				leftPanel.style.width = 'calc(97% + 10px)'; 
+				rightPanel.style.width = 'calc(97% + 10px)';
+				resizer.style.width = 'calc(97% + 10px)';
+				resizer.style.height = '5px';
+			}
+		}
+
+		// Call adjustLayout once on page load
+		adjustLayout();
+
+		// Resize event listener with throttling
+		let resizeTimeout;
+		window.addEventListener('resize', function() {
+			console.log('resize event triggered')
+			clearTimeout(resizeTimeout);
+			resizeTimeout = setTimeout(adjustLayout, 0); // Adjust delay as needed
+		});
+	});
+</script>
+<script>
+	import { isOpen } from '../store.js';
+
+	// Set the store to true when the button is clicked
+	function openMenu() {
+		console.log('button clicked')
+	  isOpen.set(!isOpen.get());
+	}
+  
+	// Add an event listener to the button
+	document.getElementById('menuButton').addEventListener('click', openMenu);
+
+	isOpen.subscribe(open => {
+		if (open) {
+			document.getElementById('drawerMenu').style.display = 'block';
+			document.getElementById('drawerMenu').classList.add('fade-in');
+			console.log('menu open')
+		} else {
+			document.getElementById('drawerMenu').classList.remove('fade-in');
+			document.getElementById('drawerMenu').style.display = 'none';
+			console.log('menu closed')
+		}
+	})
+</script>
+<div id="loading-spinner">
+	<svg viewBox="0 0 50 50" width="50" height="50">
+		<path d="M25,0 L30,18 L50,18 L35,30 L40,50 L25,38 L10,50 L15,30 L0,18 L20,18 L25,0 Z" fill="none" stroke="rgb(255, 175, 243)" stroke-width="1"></path>
+	</svg>
+</div>
+<menu class="absolute top-2 right-3 z-10" id="menuButton" role="button" tabindex="0">
+	<MenuIcon client:load />
+</menu>
+<div id="drawerMenu">
+	<MobileMenu transition:name="slide" />
+</div>
+<div id="container" class="flex flex-col lg:flex-row w-screen h-screen">
+	<div class="accent h-screen absolute z-10 w-[20px]">
+		<div class="h-screen w-[50%] bg-[#ffaff3] float-left"></div>
+		<div class="h-screen w-[50%] bg-fuchsia-200 float-left"></div>
+	</div>
+	<div id="editor" class="flex-grow relative float-left w-[calc(97% + 10px)] ml-[20px] lg:w-[50%] h-[50%] lg:h-screen"></div>
+	<script is:raw type="gleam" id="code">import gleam/io
+
+pub fn main() {
+	io.println("Hello world!")
+}</script>
+	<div id="errors" class="errors h-[5px] lg:h-screen w-[calc(97% + 10px)] lg:w-[5px] ">&nbsp;</div>
+	<div id="output" class="flex-grow relative w-[calc(97% + 10px)] ml-[20px] lg:ml-[0px] lg:w-[calc(50% - 25px)] h-[49%] text-xs lg:text-sm lg:h-screen pt-5 pl-7"><pre class="log"></pre></div>
+</div>
