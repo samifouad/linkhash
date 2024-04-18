@@ -1,0 +1,19 @@
+---
+import { supabase } from '../db/supabase';
+
+const { data, error } = await supabase
+                                .from("todos")
+                                .select('*')
+
+
+console.log(data)
+console.log(error)
+---
+
+{
+  (
+    <ul>
+      { JSON.stringify(data) }
+    </ul>
+  )
+}
