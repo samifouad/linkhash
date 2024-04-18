@@ -8,5 +8,5 @@ import cloudflare from "@astrojs/cloudflare";
 export default defineConfig({
   output: 'server',
   integrations: [tailwind(), svelte()],
-  adapter: cloudflare()
+  adapter: cloudflare({ mode: "directory" })
 });
