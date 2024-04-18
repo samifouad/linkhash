@@ -1,4 +1,4 @@
-import { supabase } from '../db/supabase'
+import { supabase } from '../src/db/supabase'
 
 export async function GET() {
 
