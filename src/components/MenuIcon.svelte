@@ -51,7 +51,7 @@ export let userProfileImage
                   <img src="{ userProfileImage }" style="display: inline;width: 50px;height: 50px;border-radius: 50px;object-fit: fit;" alt="user icon">
             </a>
       </div>
-      <div style="float: left; line-height: 50px; height: 50px; padding-top: 10px; padding-left: 10px;">
+      <div id="hamburgerMenu" style="float: left; line-height: 50px; height: 50px; padding-top: 10px; padding-left: 10px;">
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <svg class="ham hamRotate ham1 {$isOpen ? 'active' : ''}" viewBox="0 0 100 100" width="45" style="display: inline;">
                   <path

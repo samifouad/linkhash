@@ -32,10 +32,9 @@ function openMenu() {
 	isOpen.set(!isOpen.get());
 }
 
-if ( user.loggedIn == false ) {
-	// Add an event listener to the button
-	document.getElementById('menuButton').addEventListener('click', openMenu)
-}
+// Add an event listener to the button
+document.getElementById('hamburgerMenu').addEventListener('click', openMenu)
+
 
 isOpen.subscribe(open => {
 	if (open) {
