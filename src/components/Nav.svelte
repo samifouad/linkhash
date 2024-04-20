@@ -5,12 +5,18 @@ import MenuIcon from './MenuIcon.svelte'
 import SignInGithub from './SignInGithub.svelte'
 import { isOpen, isLoggedIn } from '../lib/store'
 
+let user = { loggedIn: false };
 
 onMount(async () => {
 	const { data, error } = await supabase.auth.getUser()
 
+	console.log(data.user)
 
-	console.log(data)
+	if (data.user && data.user.role == 'authenticated') {
+		user.loggedIn = true
+	} else {
+		user.loggedIn = false
+	}
 });
 
 // Set the store to true when the button is clicked
@@ -39,4 +45,8 @@ isOpen.subscribe(open => {
 	
 </style>
 
-<MenuIcon />
+{#if user.loggedIn}
+	<MenuIcon />
+{:else}
+	<SignInGithub />
+{/if}
