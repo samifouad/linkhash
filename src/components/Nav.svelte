@@ -9,9 +9,9 @@ let user = { loggedIn: false };
 
 onMount(async () => {
 	try {
-		const { data, error } = await supabase.auth.getUser()
+		const { data, error } = await supabase.auth.Session()
 
-		console.log(data.user)
+		console.log(data)
 
 		console.log(error)
 
