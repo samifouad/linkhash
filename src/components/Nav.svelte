@@ -8,14 +8,19 @@ import { isOpen, isLoggedIn } from '../lib/store'
 let user = { loggedIn: false };
 
 onMount(async () => {
-	const { data, error } = await supabase.auth.getUser()
+	try {
+		const { data, error } = await supabase.auth.getUser()
 
-	console.log(data.user)
+		console.log(data.user)
 
-	if (data.user && data.user.role == 'authenticated') {
-		user.loggedIn = true
-	} else {
-		user.loggedIn = false
+		if (data.user && data.user.role == 'authenticated') {
+			user.loggedIn = true
+		} else {
+			user.loggedIn = false
+		}
+	} catch (e) {
+		// user logged out
+		// don't need special handling here
 	}
 });
 
@@ -25,7 +30,7 @@ function openMenu() {
 	isOpen.set(!isOpen.get());
 }
 
-if ( !user.loggedIn ) {
+if ( user.loggedIn == false ) {
 	// Add an event listener to the button
 	document.getElementById('menuButton').addEventListener('click', openMenu)
 }
