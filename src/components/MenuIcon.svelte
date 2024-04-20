@@ -1,5 +1,5 @@
 <script>
-import { isOpen } from '../store.js';
+import { isOpen } from '../lib/store.js';
 </script>
 
 <style>

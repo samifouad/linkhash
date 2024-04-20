@@ -1,41 +1,13 @@
 ---
-import MenuIcon from '../components/MenuIcon.svelte'
+import Nav from '../components/Nav.svelte'
 import MobileMenu from '../components/MenuMobile.svelte'
-import { ViewTransitions } from 'astro:transitions';
 ---
 <style>
-	#drawerMenu {
-		display: none;
-		opacity: 0;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 4;
-        overflow: hidden;
-        text-align: center;
-        background-color: rgba(255,255,255,0.95);
-    }
-	.fade-in {
-		opacity: 1;
-		animation-name: fadeInOpacity;
-		animation-iteration-count: 1;
-		animation-timing-function: ease-in;
-		animation-duration: 0.1s;
-        animation-fill-mode: forwards; 
-	}
+	/* 
+		use code folding to hide this
 
-	@keyframes fadeInOpacity {
-		0% {
-			opacity: 0;
-		}
-		100% {
-			opacity: 1;
-		}
-	}
-</style>
-<style>
+		it has to be inlined to avoid any FOUC
+	*/
 	html {
 		font-family: system-ui, sans-serif;
 		background: #13151a;
@@ -223,78 +195,57 @@ import { ViewTransitions } from 'astro:transitions';
 	.fade-out {
 		animation: fadeOut 1s ease-out forwards;
 	}
-</style>
-<script is:inline type="module">
-	import CodeFlask from "/js/codeflask.module.js"
-	import { debounce, sendToWorker } from "/js/index.js"
 
-	console.log('astro loaded')
-
-	function getCodeHash() {
-		const urlParams = new URLSearchParams(window.location.search)
-		return urlParams.get('codeHash')
+	#drawerMenu {
+		display: none;
+		opacity: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 4;
+        overflow: hidden;
+        text-align: center;
+        background-color: rgba(255,255,255,0.95);
+    }
+	.fade-in {
+		opacity: 1;
+		animation-name: fadeInOpacity;
+		animation-iteration-count: 1;
+		animation-timing-function: ease-in;
+		animation-duration: 0.1s;
+        animation-fill-mode: forwards; 
 	}
 
-	function encodeForUrl(data) {
-		return btoa(data)
-			.replace(/\+/g, '-') // Replace + with -
-			.replace(/\//g, '_') // Replace / with _
-			.replace(/=+$/, ''); // Remove trailing =
-	}
-
-	function decodeFromUrl(encodedData) {
-		try {
-			console.log("running decoding") // DEBUG
-			return atob(encodedData.replace(/-/g, '+').replace(/_/g, '/'))
-		} catch (e) {	
-			console.error("error decoding base64 url")
-			return null
+	@keyframes fadeInOpacity {
+		0% {
+			opacity: 0;
+		}
+		100% {
+			opacity: 1;
 		}
 	}
+</style>
+<script is:inline type="module">
+	// this script tag doesn't have access to npm modules
+	// it is not really processed by astro
+	// anything here is just passed to the client to be 
+	// handled by the browser as-is
+	//
+	// so it's safe to reference anything inside /public/js
+	// but do not reference anything from NPM
 
-	function updateUrl(codeHash) {
-		history.replaceState({}, '', '/?h=' + codeHash);
-	}
-
-	function updateState (code) {
-		const codeHash = encodeForUrl(code)
-		updateUrl(codeHash)
-		console.log(code) // debug
-		console.log(codeHash) // debug
-	}
-
-	const prismGrammar = {
-	comment: {
-		pattern: /\/\/.*/,
-		greedy: true,
-	},
-	function: /([a-z_][a-z0-9_]+)(?=\()/,
-	keyword:
-		/\b(use|case|if|@external|@deprecated|fn|import|let|assert|try|pub|type|opaque|const|panic|todo|as)\b/,
-	symbol: {
-		pattern: /([A-Z][A-Za-z0-9_]+)/,
-		greedy: true,
-	},
-	operator: {
-		pattern:
-		/(<<|>>|<-|->|\|>|<>|\.\.|<=\.?|>=\.?|==\.?|!=\.?|<\.?|>\.?|&&|\|\||\+\.?|-\.?|\/\.?|\*\.?|%\.?|=)/,
-		greedy: true,
-	},
-	string: {
-		pattern: /"((?:[^"\\]|\\.)*)"/,
-		greedy: true,
-	},
-	module: {
-		pattern: /([a-z][a-z0-9_]*)\./,
-		inside: {
-		punctuation: /\./,
-		},
-		alias: "keyword",
-	},
-	punctuation: /[.\\:,{}()]/,
-	number:
-		/\b(?:0b[0-1]+|0o[0-7]+|[[:digit:]][[:digit:]_]*(\\.[[:digit:]]*)?|0x[[:xdigit:]]+)\b/,
-	};
+	import CodeFlask from '/js/codeflask.module.js'
+	import { sendToWorker } from '/js/index.js'
+	import { 
+		getCodeHash,
+		encodeForUrl,
+		decodeFromUrl,
+		updateState,
+		prismGrammar,
+		debounce
+	 } from '/js/helpers/index.js'
 
 	// select editor
 	const editorElem = document.getElementById('editor')
@@ -304,28 +255,34 @@ import { ViewTransitions } from 'astro:transitions';
 
 	// load hash from url
 	const queryString = window.location.search;
-	console.log(queryString); // DEBUG
+	//console.log(queryString); // DEBUG
 
 	const urlParams = new URLSearchParams(queryString);
-	console.log(urlParams); // DEBUG
+	//console.log(urlParams); // DEBUG
 
 	let loadFromUrl = false
 	let loadedCodeHash = ""
 	let loadedCodeHashLength = 0
 	try {
 		loadedCodeHash = urlParams.get('h')
-		console.log(loadedCodeHash); // DEBUG
+		//console.log(loadedCodeHash); // DEBUG
 
 		loadedCodeHashLength = loadedCodeHash.length
-		console.log(loadedCodeHashLength); // DEBUG
+		//console.log(loadedCodeHashLength); // DEBUG
 		loadFromUrl = true
 	} catch (e) {
-		console.error(e)
-		console.info("no hash present, loading default example")
+		// no hash present, loading default example
+		// no need to spit out error
 	}
 
+	const snippet = `import gleam/io
+
+pub fn main() {
+	io.println("Hello world!")
+}`
+
 	// get initial code
-	const initialCode = loadFromUrl ? decodeFromUrl(loadedCodeHash) : document.querySelector("#code").innerHTML
+	const initialCode = loadFromUrl ? decodeFromUrl(loadedCodeHash) : snippet
 
 	// add language w/ highlighter
 	flask.addLanguage("gleam", prismGrammar)
@@ -415,9 +372,9 @@ import { ViewTransitions } from 'astro:transitions';
 		// Function to adjust layout
 		function adjustLayout() {
 			// Tailwind's breakpoints (adjust these values if you're using custom breakpoints)
-				const lgBreakpoint = 1024; // pixels
+				const lgBreakpoint = 1023; // pixels
 
-			if (window.innerWidth >= lgBreakpoint) {
+			if (window.innerWidth > lgBreakpoint) {
 				// 'lg' and above:
 				leftPanel.style.height = '100%'; 
 				rightPanel.style.height = '100%'; 
@@ -433,51 +390,39 @@ import { ViewTransitions } from 'astro:transitions';
 		}
 
 		// Call adjustLayout once on page load
-		adjustLayout();
+		adjustLayout()
 
-		// Resize event listener with throttling
-		let resizeTimeout;
 		window.addEventListener('resize', function() {
-			console.log('resize event triggered')
-			clearTimeout(resizeTimeout);
-			resizeTimeout = setTimeout(adjustLayout, 0); // Adjust delay as needed
+			// using setTimeout causes too much of a backlog
+			// on the event loop & the rendering in browser
+			// can't keep up. so there's a FOUC when switching
+			// between output area being on the left vs at bottom
+			//
+			// need to disable this to allow for more fluid window resize
+			// will need to test perf if adjusting on every resize event
+			// causes some unexpected problems or high cpu use. should be OK tho	
+			//
+			//
+			// let resizeTimeout 
+			// console.log('resize event triggered')
+			// clearTimeout(resizeTimeout);
+			// resizeTimeout = setTimeout(adjustLayout, 0); // Adjust delay as needed
+
+			// call whenever any resize happens, no throttling
+			adjustLayout()
 		});
 	});
-</script>
-<script>
-	import { isOpen } from '../store.js';
-
-	// Set the store to true when the button is clicked
-	function openMenu() {
-		console.log('button clicked')
-	  isOpen.set(!isOpen.get());
-	}
-  
-	// Add an event listener to the button
-	document.getElementById('menuButton').addEventListener('click', openMenu);
-
-	isOpen.subscribe(open => {
-		if (open) {
-			document.getElementById('drawerMenu').style.display = 'block';
-			document.getElementById('drawerMenu').classList.add('fade-in');
-			console.log('menu open')
-		} else {
-			document.getElementById('drawerMenu').classList.remove('fade-in');
-			document.getElementById('drawerMenu').style.display = 'none';
-			console.log('menu closed')
-		}
-	})
 </script>
 <div id="loading-spinner">
 	<svg viewBox="0 0 50 50" width="50" height="50">
 		<path d="M25,0 L30,18 L50,18 L35,30 L40,50 L25,38 L10,50 L15,30 L0,18 L20,18 L25,0 Z" fill="none" stroke="rgb(255, 175, 243)" stroke-width="1"></path>
 	</svg>
 </div>
-<menu class="absolute top-2 right-3 z-10" id="menuButton" role="button" tabindex="0">
-	<MenuIcon client:load />
+<menu class="absolute top-2 right-3 z-10" id="menuButton">
+	<Nav client:only />
 </menu>
 <div id="drawerMenu">
-	<MobileMenu transition:name="slide" />
+	<MobileMenu client:load />
 </div>
 <div id="container" class="flex flex-col lg:flex-row w-screen h-screen">
 	<div class="accent h-screen absolute z-10 w-[20px]">
@@ -485,11 +430,7 @@ import { ViewTransitions } from 'astro:transitions';
 		<div class="h-screen w-[50%] bg-fuchsia-200 float-left"></div>
 	</div>
 	<div id="editor" class="flex-grow relative float-left w-[calc(97% + 10px)] ml-[20px] lg:w-[50%] h-[50%] lg:h-screen"></div>
-	<script is:raw type="gleam" id="code">import gleam/io
-
-pub fn main() {
-	io.println("Hello world!")
-}</script>
+	<script is:raw type="gleam" id="code"></script>
 	<div id="errors" class="errors h-[5px] lg:h-screen w-[calc(97% + 10px)] lg:w-[5px] ">&nbsp;</div>
 	<div id="output" class="flex-grow relative w-[calc(97% + 10px)] ml-[20px] lg:ml-[0px] lg:w-[calc(50% - 25px)] h-[49%] text-xs lg:text-sm lg:h-screen pt-5 pl-7"><pre class="log"></pre></div>
 </div>

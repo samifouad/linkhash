@@ -1,24 +1,7 @@
-// @ts-nocheck
-function hideLoadingSpinner() {
-  var spinner = document.getElementById('loading-spinner');
-  spinner.style = 'display: none';
-}
-
-// select output
-const output = document.querySelector("#output")
-
-function appendOutput(content, className) {
-  if (!content) return;
-  output.innerHTML = `<pre class="${className}">${content}</pre>`;
-}
-
-function debounce(fn, delay) {
-  let timer = null;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), delay);
-  };
-}
+import { 
+  hideSpinner,
+  appendOutput
+} from './helpers/index.js'
 
 // Whether the worker is currently working or not, used to avoid sending
 // multiple messages to the worker at once.
@@ -37,9 +20,10 @@ function sendToWorker(code) {
   worker.postMessage(code);
 }
 
+// Handle the result of the compilation and execution
 worker.onmessage = (event) => {
-  // Handle the result of the compilation and execution
-  hideLoadingSpinner();
+  
+  hideSpinner();
 
   const result = event.data;
   if (result.log) appendOutput(result.log, "log");
@@ -54,4 +38,4 @@ worker.onmessage = (event) => {
   queuedWork = undefined;
 };
 
-export { debounce, sendToWorker }
+export { sendToWorker }

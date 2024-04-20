@@ -9,7 +9,7 @@ const project = compiler.newProject();
 
 for (const [name, code] of Object.entries(stdlib)) {
   project.writeModule(name, code);
-  console.log(`Loaded ${name}`);
+  // console.log(`Loaded ${name}`); // DEBUG
 }
 
 // Monkey patch console.log to keep a copy of the output
