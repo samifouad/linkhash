@@ -7,7 +7,7 @@ import { isOpen, isLoggedIn } from '../lib/store'
 
 
 onMount(async () => {
-	const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'github' })
+	const { data, error } = await supabase.auth.getUser()
 
 
 	console.log(data)
