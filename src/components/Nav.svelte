@@ -13,6 +13,8 @@ onMount(async () => {
 
 		console.log(data.user)
 
+		console.log(error)
+
 		if (data.user && data.user.role == 'authenticated') {
 			user.loggedIn = true
 		} else {
