@@ -1,11 +1,15 @@
 <script>
 import { supabase } from '../lib/supabase'
 import { onMount } from 'svelte'
-import MenuIcon from './MenuIcon.svelte'
+import MenuIcons from './MenuIcons.svelte'
 import SignInGithub from './SignInGithub.svelte'
 import { isLoggedIn } from '../lib/store'
 
-let user = { loggedIn: false };
+let user = {
+	loggedIn: false,
+	name: '',
+	pfp: ''
+};
 
 onMount(async () => {
 	try {
@@ -17,6 +21,8 @@ onMount(async () => {
 
 		if (data.user && data.user.role == 'authenticated') {
 			user.loggedIn = true
+			user.pfp = data.user.user_metadata.avatar_url
+			user.name = data.user.user_metadata.user_name
 		} else {
 			user.loggedIn = false
 		}
@@ -32,7 +38,10 @@ onMount(async () => {
 </style>
 
 {#if user.loggedIn}
-	<MenuIcon />
+	<MenuIcons 
+		userProfileImage={ user.pfp }
+		userProfilePage={ user.name }
+	/>
 {:else}
 	<SignInGithub />
 {/if}

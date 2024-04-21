@@ -7,27 +7,7 @@ export let userProfileImage
 // https://avatars.githubusercontent.com/u/6378290?v=4
 
 
-// Set the store to true when the button is clicked
-function openMenu() {
-	//console.log('button clicked') // DEBUG
-	isOpen.set(!isOpen.get());
-}
 
-// Add an event listener to the button
-document.getElementById('hamburgerMenu').addEventListener('click', openMenu)
-
-
-isOpen.subscribe(open => {
-	if (open) {
-		document.getElementById('drawerMenu').style.display = 'block';
-		document.getElementById('drawerMenu').classList.add('fade-in');
-		//console.log('menu open') // DEBUG
-	} else {
-		document.getElementById('drawerMenu').classList.remove('fade-in');
-		document.getElementById('drawerMenu').style.display = 'none';
-		//console.log('menu closed') // DEBUG
-	}
-})
 </script>
 
 <style>
@@ -70,7 +50,7 @@ isOpen.subscribe(open => {
 
 <div style="width: 110px;">
       <div style="float: left; line-height: 60px; height: 60px">
-            <a href="{ userProfilePage }">
+            <a href="/@{ userProfilePage }">
                   <img src="{ userProfileImage }" style="display: inline;width: 50px;height: 50px;border-radius: 50px;object-fit: fit;" alt="user icon">
             </a>
       </div>

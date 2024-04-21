@@ -238,6 +238,7 @@ import MobileMenu from '../components/MenuMobile.svelte'
 
 	import CodeFlask from '/js/codeflask.module.js'
 	import { sendToWorker } from '/js/index.js'
+	import { isOpen } from '../lib/store.js'
 	import { 
 		getCodeHash,
 		encodeForUrl,
@@ -412,6 +413,28 @@ pub fn main() {
 			adjustLayout()
 		});
 	});
+
+	// Set the store to true when the button is clicked
+	function openMenu() {
+		//console.log('button clicked') // DEBUG
+		isOpen.set(!isOpen.get());
+	}
+
+	// Add an event listener to the button
+	document.getElementById('hamburgerMenu').addEventListener('click', openMenu)
+
+
+	isOpen.subscribe(open => {
+		if (open) {
+			document.getElementById('drawerMenu').style.display = 'block';
+			document.getElementById('drawerMenu').classList.add('fade-in');
+			//console.log('menu open') // DEBUG
+		} else {
+			document.getElementById('drawerMenu').classList.remove('fade-in');
+			document.getElementById('drawerMenu').style.display = 'none';
+			//console.log('menu closed') // DEBUG
+		}
+	})
 </script>
 <div id="loading-spinner">
 	<svg viewBox="0 0 50 50" width="50" height="50">
