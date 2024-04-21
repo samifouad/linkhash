@@ -23,7 +23,7 @@ isOpen.subscribe(open => {
 })
 
 // Add an event listener to the button
-document.getElementById('drawerMenu').addEventListener('click', openMenu)
+//document.getElementById('drawerMenu').addEventListener('click', openMenu)
 //
 // moved this functionality to svelte on:click fn below
 </script>
@@ -74,7 +74,7 @@ document.getElementById('drawerMenu').addEventListener('click', openMenu)
       </div>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div id="hamburgerMenu" on:click={ openMenu() } style="float: left; line-height: 50px; height: 50px; padding-top: 10px; padding-left: 10px;">
+      <div id="hamburgerMenu" on:click={ openMenu } style="float: left; line-height: 50px; height: 50px; padding-top: 10px; padding-left: 10px;">
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <svg class="ham hamRotate ham1 {$isOpen ? 'active' : ''}" viewBox="0 0 100 100" width="45" style="display: inline;">
                   <path
