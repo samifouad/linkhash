@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import { onMount } from 'svelte'
 import MenuIcons from './MenuIcons.svelte'
 import SignInGithub from './SignInGithub.svelte'
-import { isLoggedIn } from '../lib/store'
+import { isOpen, isLoggedIn } from '../lib/store'
 
 let user = {
 	loggedIn: false,
@@ -27,6 +27,7 @@ onMount(async () => {
 			user.loggedIn = false
 		}
 	} catch (e) {
+		console.log('catching error: '+ e)
 		// user logged out
 		// don't need special handling here
 	}

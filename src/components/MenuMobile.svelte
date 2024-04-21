@@ -1,7 +1,5 @@
 <script>
 import SignInGithub from "./SignInGithub.svelte";
-
-console.log('im running')
 </script>
 
 <!-- <MenuMobile> -->

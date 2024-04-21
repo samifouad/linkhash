@@ -4,10 +4,28 @@ import { isOpen } from '../lib/store.js';
 export let userProfilePage
 export let userProfileImage
 
-// https://avatars.githubusercontent.com/u/6378290?v=4
+// Set the store to true when the button is clicked
+function openMenu() {
+      //console.log('button clicked') // DEBUG
+      isOpen.set(!isOpen.get());
+}
 
+isOpen.subscribe(open => {
+      if (open) {
+            document.getElementById('drawerMenu').style.display = 'block';
+            document.getElementById('drawerMenu').classList.add('fade-in');
+            //console.log('menu open') // DEBUG
+      } else {
+            document.getElementById('drawerMenu').classList.remove('fade-in');
+            document.getElementById('drawerMenu').style.display = 'none';
+            //console.log('menu closed') // DEBUG
+      }
+})
 
-
+// Add an event listener to the button
+//document.getElementById('hamburgerMenu').addEventListener('click', openMenu)
+//
+// moved this functionality to svelte on:click fn below
 </script>
 
 <style>
@@ -54,7 +72,9 @@ export let userProfileImage
                   <img src="{ userProfileImage }" style="display: inline;width: 50px;height: 50px;border-radius: 50px;object-fit: fit;" alt="user icon">
             </a>
       </div>
-      <div id="hamburgerMenu" style="float: left; line-height: 50px; height: 50px; padding-top: 10px; padding-left: 10px;">
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div id="hamburgerMenu" on:click={ openMenu() } style="float: left; line-height: 50px; height: 50px; padding-top: 10px; padding-left: 10px;">
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <svg class="ham hamRotate ham1 {$isOpen ? 'active' : ''}" viewBox="0 0 100 100" width="45" style="display: inline;">
                   <path
