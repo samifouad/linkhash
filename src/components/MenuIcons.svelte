@@ -23,7 +23,7 @@ isOpen.subscribe(open => {
 })
 
 // Add an event listener to the button
-//document.getElementById('hamburgerMenu').addEventListener('click', openMenu)
+document.getElementById('drawerMenu').addEventListener('click', openMenu)
 //
 // moved this functionality to svelte on:click fn below
 </script>
@@ -69,7 +69,7 @@ isOpen.subscribe(open => {
 <div style="width: 110px;">
       <div style="float: left; line-height: 60px; height: 60px">
             <a href="/@{ userProfilePage }">
-                  <img src="{ userProfileImage }" style="display: inline;width: 50px;height: 50px;border-radius: 50px;object-fit: fit;" alt="user icon">
+                  <img src="{ userProfileImage }" style="display: inline; width: 50px; height: 50px; border-radius: 50px; object-fit: cover;" alt="user icon">
             </a>
       </div>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
