@@ -1,0 +1,56 @@
+---
+import D3Canvas from '../components/D3Canvas.svelte'
+
+const data = {
+  "nodes": [
+    {"id": "cool-cluster", "group": 1, "isBig": true, "showLabel": true, "image": "https://randomuser.me/api/portraits/women/69.jpg"},
+    {"id": "vm-work", "group": 2, "isBig": true, "image": "https://randomuser.me/api/portraits/women/33.jpg"},
+    {"id": "vm-home", "group": 3, "isBig": true, "image": "/distro_icons/128/128_debian.png"},
+    {"id": "vm-work-apache", "group": 2, "showLabel": false, "image": ""},
+    {"id": "vm-work-php", "group": 2, "image": "https://randomuser.me/api/portraits/women/79.jpg"},
+    {"id": "vm-work-mysql", "group": 2, "image": "https://randomuser.me/api/portraits/women/89.jpg"},
+    {"id": "vm-home-apache", "group": 3, "showLabel": false, "image": "https://randomuser.me/api/portraits/women/89.jpg"},
+    {"id": "vm-home-php", "group": 3, "showLabel": false, "image": "https://randomuser.me/api/portraits/women/89.jpg"},
+    {"id": "vm-home-mysql", "group": 3, "showLabel": false, "image": "https://randomuser.me/api/portraits/women/89.jpg"},
+  ],
+  "links": []
+};
+---
+<script type="module">
+    import { sendToWorker } from '/js/index.js';
+    import { 
+		getCodeHash,
+		encodeForUrl,
+		decodeFromUrl
+	 } from '/js/helpers/index.js'
+  
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.code) {
+        try {
+          const decodedCode = decodeFromUrl(event.data.code);
+          //console.log('sandbox received: '+ decodedCode)
+          sendToWorker(decodedCode);
+        } catch (e) {
+          const outputElement = document.getElementById('output');
+          outputElement.textContent = 'Error decoding code: ' + e.message;
+        }
+      }
+    });
+
+    // Receive messages from the web worker
+    self.onmessage = (event) => {
+      if (event.data.type === 'hideSpinner') {
+        // Forward the message to the parent window
+        window.parent.postMessage({ type: 'hideSpinner' }, '*');
+      }
+    };
+  
+    window.addEventListener('DOMContentLoaded', () => {
+      const outputElement = document.getElementById('output');
+      outputElement.textContent = 'Waiting for code...';
+    });
+  </script>
+  
+  <pre><p id="output" class="whitespace-pre">Loading code...</p></pre>
+  
+  <D3Canvas {data} w="600" h="600" linkDistance=60 client:load />

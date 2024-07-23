@@ -23,7 +23,7 @@ function sendToWorker(code) {
 // Handle the result of the compilation and execution
 worker.onmessage = (event) => {
   
-  hideSpinner();
+  self.postMessage({ type: 'hideSpinner' });
 
   const result = event.data;
   if (result.log) appendOutput(result.log, "log");

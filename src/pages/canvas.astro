@@ -1,0 +1,18 @@
+---
+import D3Canvas from '../components/Canvas.svelte'
+
+const data = {
+  "nodes": [
+    {"id": "Myriel", "group": 1, "isBig": true, "showLabel": true, "image": "https://randomuser.me/api/portraits/women/69.jpg"},
+    {"id": "Napoleon", "group": 1, "image": "https://randomuser.me/api/portraits/women/33.jpg"},
+    {"id": "Mlle.Baptistine", "group": 1, "image": "https://randomuser.me/api/portraits/women/90.jpg"},
+    {"id": "Mme.Magloire", "group": 1, "isBig": true, "showLabel": false, "image": ""},
+    {"id": "CountessdeLo", "group": 1, "image": "https://randomuser.me/api/portraits/women/79.jpg"},
+    {"id": "Geborand", "group": 1, "image": ""},
+    {"id": "Listolier", "group": 2, "isBig": true, "showLabel": false, "image": "https://randomuser.me/api/portraits/women/89.jpg"}
+  ],
+  "links": [
+  ]
+};
+---
+<D3Canvas {data} client:load />

@@ -1,6 +1,5 @@
 ---
-import Nav from '../components/Nav.svelte'
-import MobileMenu from '../components/MenuMobile.svelte'
+
 ---
 <style>
 	/* 
@@ -237,10 +236,8 @@ import MobileMenu from '../components/MenuMobile.svelte'
 	// but do not reference anything from NPM
 
 	import CodeFlask from '/js/codeflask.module.js'
-	import { sendToWorker } from '/js/index.js'
 	import { 
-		getCodeHash,
-		encodeForUrl,
+		hideSpinner,
 		decodeFromUrl,
 		updateState,
 		prismGrammar,
@@ -294,7 +291,19 @@ pub fn main() {
 
 	// flask.onUpdate((code) => {  updateState(code) })
 
-	const debouncedSendToWorker = debounce((code) => sendToWorker(code), 600)
+	//const debouncedSendToWorker = debounce((code) => sendToWorker(code), 600)
+	const debouncedSendToWorker = debounce((code) => {
+      //sendToWorker(code);
+      updateState(code);
+
+      // Post the updated code to the iframe
+      const base64Code = window.btoa(unescape(encodeURIComponent(code)));
+      const iframe = document.getElementById('sandbox');
+      if (iframe) {
+		console.log('sending this code to sandbox: '+ base64Code)
+        iframe.contentWindow.postMessage({ code: base64Code }, '*');
+      }
+    }, 600);
 
 	flask.onUpdate((code) => {
 		debouncedSendToWorker(code)
@@ -411,18 +420,18 @@ pub fn main() {
 			// call whenever any resize happens, no throttling
 			adjustLayout()
 		});
+		
+		window.addEventListener('message', function(e) {
+			if (e.data.type === 'hideSpinner') {
+				hideSpinner();
+			}
+		});
 	});
 </script>
 <div id="loading-spinner">
 	<svg viewBox="0 0 50 50" width="50" height="50">
 		<path d="M25,0 L30,18 L50,18 L35,30 L40,50 L25,38 L10,50 L15,30 L0,18 L20,18 L25,0 Z" fill="none" stroke="rgb(255, 175, 243)" stroke-width="1"></path>
 	</svg>
-</div>
-<menu class="absolute top-2 right-3 z-10" id="menuButton">
-	<Nav client:only />
-</menu>
-<div id="drawerMenu">
-	<MobileMenu client:load />
 </div>
 <div id="container" class="flex flex-col lg:flex-row w-screen h-screen">
 	<div class="accent h-screen absolute z-10 w-[20px]">
@@ -432,5 +441,7 @@ pub fn main() {
 	<div id="editor" class="flex-grow relative float-left w-[calc(97% + 10px)] ml-[20px] lg:w-[50%] h-[50%] lg:h-screen"></div>
 	<script is:raw type="gleam" id="code"></script>
 	<div id="errors" class="errors h-[5px] lg:h-screen w-[calc(97% + 10px)] lg:w-[5px] ">&nbsp;</div>
-	<div id="output" class="flex-grow relative w-[calc(97% + 10px)] ml-[20px] lg:ml-[0px] lg:w-[calc(50% - 25px)] h-[49%] text-xs lg:text-sm lg:h-screen pt-5 pl-7"><pre class="log"></pre></div>
+	<div id="output" class="flex-grow relative w-[calc(97% + 10px)] m-[0px] p-[0px] lg:w-[calc(50% - 25px)] h-[49%] text-xs lg:text-sm lg:h-screen pl-7">
+		<iframe class="w-full h-full" id="sandbox" sandbox="allow-scripts allow-same-origin" src="/sandbox"></iframe>
+	</div>
 </div>

@@ -1,9 +1,9 @@
 let compiler;
 
 export default async function initGleamCompiler() {
-  const wasm = await import("/js/wasm-compiler/gleam_wasm.js");
+  const wasm = await import("/js/wasm-compiler-1.3.2/gleam_wasm.js");
   await wasm.default();
-  wasm.initialise_panic_hook(false);
+  wasm.initialise_panic_hook();
   if (!compiler) {
     compiler = new Compiler(wasm);
   }

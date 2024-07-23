@@ -4,6 +4,6 @@ import { default as encodeForUrl } from './encodeForUrl.js'
 export default function (code) {
     const codeHash = encodeForUrl(code)
     updateUrl(codeHash)
-    console.log(code) // debug
-    console.log(codeHash) // debug
+    // console.log(code) // debug
+    // console.log(codeHash) // debug
 }
