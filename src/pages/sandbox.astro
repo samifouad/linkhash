@@ -1,5 +1,8 @@
 ---
 import D3Canvas from '../components/D3Canvas.svelte'
+Astro.response.headers.set('Vercel-CDN-Cache-Control', 'max-age=3600',);
+Astro.response.headers.set('CDN-Cache-Control', 'max-age=60',);
+export const prerender = true;
 
 const data = {
   "nodes": [
