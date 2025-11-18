@@ -44,7 +44,7 @@ const data = {
     self.onmessage = (event) => {
       if (event.data.type === 'hideSpinner') {
         // Forward the message to the parent window
-        window.parent.postMessage({ type: 'hideSpinner' }, '*');
+        window.parent.postMessage({ type: 'hideSpinner' }, window.location.origin);
       }
     };
   

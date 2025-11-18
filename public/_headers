@@ -1,3 +1,13 @@
+/*
+    # Security Headers
+    X-Frame-Options: SAMEORIGIN
+    X-Content-Type-Options: nosniff
+    X-XSS-Protection: 1; mode=block
+    Referrer-Policy: strict-origin-when-cross-origin
+    Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
+    # Content Security Policy - allows necessary features for WASM compiler and dynamic imports
+    Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: data:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://api.linkha.sh https://randomuser.me; frame-ancestors 'self'; base-uri 'self'; form-action 'self'
+
 /js/*
     Content-type: application/javascript
 
