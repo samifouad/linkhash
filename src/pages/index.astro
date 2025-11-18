@@ -303,7 +303,7 @@ pub fn main() {
       const iframe = document.getElementById('sandbox');
       if (iframe) {
 		console.log('sending this code to sandbox: '+ base64Code)
-        iframe.contentWindow.postMessage({ code: base64Code }, '*');
+        iframe.contentWindow.postMessage({ code: base64Code }, window.location.origin);
       }
     }, 600);
 
